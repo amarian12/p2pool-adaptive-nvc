@@ -83,8 +83,8 @@ def get_web_root(wb, datadir_path, bitcoind_getinfo_var, stop_event=variable.Eve
     def get_patron_sendmany(total=None, trunc='0.01'):
         if total is None:
             return 'need total argument. go to patron_sendmany/<TOTAL>'
-        total = int(float(total)*1e8)
-        trunc = int(float(trunc)*1e8)
+        total = int(float(total)*1e6)
+        trunc = int(float(trunc)*1e6)
         return json.dumps(dict(
             (bitcoin_data.script2_to_address(script, node.net.PARENT), value/1e6)
             for script, value in get_current_scaled_txouts(total, trunc).iteritems()
@@ -134,8 +134,8 @@ def get_web_root(wb, datadir_path, bitcoind_getinfo_var, stop_event=variable.Eve
         miner_hash_rates, miner_dead_hash_rates = wb.get_local_rates()
         (stale_orphan_shares, stale_doa_shares), shares, _ = wb.get_stale_counts()
 
-		unknown_shares = 0
-		miner_last_difficulties = {}
+	unknown_shares = 0
+	miner_last_difficulties = {}
 
         for share_hash_str in wb.my_share_hashes:
             if share_hash_str not in node.tracker.items:
@@ -181,7 +181,7 @@ def get_web_root(wb, datadir_path, bitcoind_getinfo_var, stop_event=variable.Eve
             uptime=time.time() - start_time,
             attempts_to_share=bitcoin_data.target_to_average_attempts(node.tracker.items[node.best_share_var.value].max_target),
             attempts_to_block=bitcoin_data.target_to_average_attempts(node.bitcoind_work.value['bits'].target),
-            block_value=node.bitcoind_work.value['subsidy']*1e-8,
+            block_value=node.bitcoind_work.value['subsidy']*1e-6,
             warnings=p2pool_data.get_warnings(node.tracker, node.best_share_var.value, node.net, bitcoind_getinfo_var.value, node.bitcoind_work.value),
             donation_proportion=wb.donation_percentage/100,
             version=p2pool.__version__,
@@ -212,7 +212,7 @@ def get_web_root(wb, datadir_path, bitcoind_getinfo_var, stop_event=variable.Eve
     web_root.putChild('user_stales', WebInterface(lambda: dict((bitcoin_data.pubkey_hash_to_address(ph, node.net.PARENT), prop) for ph, prop in
         p2pool_data.get_user_stale_props(node.tracker, node.best_share_var.value, node.tracker.get_height(node.best_share_var.value)).iteritems())))
     web_root.putChild('fee', WebInterface(lambda: wb.worker_fee))
-    web_root.putChild('current_payouts', WebInterface(lambda: dict((bitcoin_data.script2_to_address(script, node.net.PARENT), value/1e8) for script, value in node.get_current_txouts().iteritems())))
+    web_root.putChild('current_payouts', WebInterface(lambda: dict((bitcoin_data.script2_to_address(script, node.net.PARENT), value/1e6) for script, value in node.get_current_txouts().iteritems())))
     web_root.putChild('patron_sendmany', WebInterface(get_patron_sendmany, 'text/plain'))
     web_root.putChild('global_stats', WebInterface(get_global_stats))
     web_root.putChild('local_stats', WebInterface(get_local_stats))
@@ -277,7 +277,7 @@ def get_web_root(wb, datadir_path, bitcoind_getinfo_var, stop_event=variable.Eve
             ),
             attempts_to_share=bitcoin_data.target_to_average_attempts(node.tracker.items[node.best_share_var.value].max_target),
             attempts_to_block=bitcoin_data.target_to_average_attempts(node.bitcoind_work.value['bits'].target),
-            block_value=node.bitcoind_work.value['subsidy']*1e-8,
+            block_value=node.bitcoind_work.value['subsidy']*1e-6,
         ))
         
         with open(os.path.join(datadir_path, 'stats'), 'wb') as f:
@@ -326,7 +326,7 @@ def get_web_root(wb, datadir_path, bitcoind_getinfo_var, stop_event=variable.Eve
                 gentx=dict(
                     hash='%064x' % share.gentx_hash,
                     coinbase=share.share_data['coinbase'].ljust(2, '\x00').encode('hex'),
-                    value=share.share_data['subsidy']*1e-8,
+                    value=share.share_data['subsidy']*1e-6,
                     last_txout_nonce='%016x' % share.contents['last_txout_nonce'],
                 ),
                 other_transaction_hashes=['%064x' % x for x in share.get_other_tx_hashes(node.tracker)],
